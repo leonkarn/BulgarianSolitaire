@@ -1,0 +1,752 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en]C-CCK-MCD   (WinNT; I) [Netscape]">
+
+<title>CSCI 455: Assignment 2</title></head>
+
+
+<body bgcolor="#ffffff">
+
+<center>
+<h2>
+CS 455 Programming Assignment 2</h2></center>
+
+<div align="right">Spring 2018 [Bono]
+<br>
+<strong>Due:</strong> Wed, Feb. 21, 11:59pm
+</div>
+
+<hr>
+
+<a name="intro"><h3>Introduction</h3></a>
+
+In this assignment you will get practice working with Java arrays,
+more practice implementing your own classes, and practice creating a
+procedural design in Java (in the <kbd>BulgarianSolitaireSimulator</kbd> class).
+Like you did in assignment 1 and lab 4, you will be implementing a
+class whose specification we have given you, in this case a class
+called <kbd>SolitaireBoard</kbd>, to represent the board configuration
+for a specific type of solitaire game described further below.  You
+will also be using tools to help develop correct code, such as
+<kbd>assert</kbd> statements along with code to verify that your class
+implementation is consistent.
+<p>
+Note: this program is due after your midterm exam, but it's a fair
+amount bigger than the first assignment.  We recommend getting started
+on it before the midterm.  It only uses topics from before the
+midterm, so working on it now will also help you prepare for the exam
+(there will be paper and pencil array programming problems as part of the
+exam).
+<p>
+Note: Lab 5 has some exercises to help you get started on the assignment.
+You will need to read over the assignment before completing those exercises.
+<p>
+
+<a name="resources"><h3>Resources</h3></a>
+
+<ul>
+  <li> Horstmann, Special topic 11.6, <kbd>assert</kbd> statements
+  <li> Horstmann, Section 11.3 Command-line arguments
+  <li> Horstmann, Section 8.4 <kbd>static</kbd> methods
+  <li> Horstmann, Section 11.2 Text Input and Output
+  <li> Horstmann, Section 7.1.4, 7.3 Partially-filled arrays
+  <li> CS 455 lecture, 2/6, Representation invariants
+  <li> CS 455 lectures 1/30, 2/1, 2/6, Partially-filled array example
+  (i.e., <kbd>Names</kbd> class)
+  <li> Horstmann, Special topic 8.1 Parameter passing
+</ul>
+
+<a name="files"><h3>The assignment files</h3> 
+</a>
+
+<strong>Getting the assignment files.</strong> 
+
+On your scf account make a pa2 directory and cd into it.
+The following command will copy the necessary files to your current directory:
+<pre>
+gmake -f ~csci455/assgts/pa2/Makefile getfiles
+</pre>
+<p>
+
+The files in <strong><tt>bold</tt></strong></a> below are ones you
+ create and/or modify and submit.  The ones not in bold are ones that
+ you will use, but not modify.  The files are:
+
+<ul>
+
+<li><a href="SolitaireBoard.java"><strong><kbd>SolitaireBoard.java</kbd></strong></a> The
+<a href="#interface">interface</a> for the <kbd>SolitaireBoard</kbd> class; it
+contains stub versions of the functions so it will compile.  It also
+  contains some named constants.  You will
+be completing the <a href="#impl">implementation</a> of this class.
+You may not change the interface for this class, but you may add
+private instance variables and/or private methods to it
+
+  <li><a
+  href="BulgarianSolitaireSimulator.java"><strong><kbd>BulgarianSolitaireSimulator.java</kbd></strong></a>
+   A main program that does a Bulgarian Solitaire Simulation.  This
+  simulation is described further in the section on <a
+  href="#assgt" >the assignment</a>
+
+<li><a href="Makefile"><kbd>Makefile</kbd></a> This has the rules for
+downloading and submitting the files.  These rules are input to the
+<kbd>gmake</kbd> program. The assignment description explains how you
+will need to use it above, and in the section on <a href="#submit">how
+to turn in your assignment</a>.
+
+<a name="certification">
+<li><a href="README"><strong><kbd>README</kbd></strong></a>
+See
+section on <a href="#submit">Submitting your program</a> for what to
+put in it.  Before you start the assignment please read the following 
+statement which you will be "signing" in the README:
+
+
+<blockquote>
+"I certify that the work submitted for this assignment does not
+violate USC's student conduct code.  In particular, the work is my
+own, not a collaboration, and does not involve code created by other
+people, with the exception of the resources explicitly mentioned in the CS 455
+Course Syllabus.  And I did not share my solution or parts of it with
+other students in the course."
+</blockquote>
+
+</a>
+
+
+</ul>
+
+<a name="run"><h3>Note on running your program</h3>
+
+You will be using <kbd>assert</kbd> statements in this program.  To be
+able to use them, you need to <em>run</em> the program with asserts enabled
+(-ea flag).  (You do not need to compile it any special way.)  Here is
+an example:
+
+<pre>
+java -ea BulgarianSolitaireSimulator
+</pre>
+
+You should run with this flag set every time.
+<p>
+Assert statements are another
+tool to help us write correct code.  More about how you are using them
+here in the section on <a href="#invar">representation invariants</a>.
+<p>
+NOTE: In Eclipse you use the Run Configurations settings (in the Run
+menu) to change what arguments are used when running a program.  You
+will be using both <em>program arguments</em> (more details in the
+next section) and <em>VM arguments</em> when running this program;
+<kbd>-ea</kbd> is a VM argument. (NOTE: VM stands for virtual machine,
+as in the Java Virtual Machine, which is what you are running when you
+do the "java" command.)
+<p>
+
+<a name="assgt"><h3>The assignment</h3>
+</a>
+
+You will be implementing a program to model the game Bulgarian
+Solitaire.  This program will run in the console window and will not
+have a GUI.  This is problem P7.4 from our textbook Big Java: Early
+Objects, 6th Edition, by Cay Horstmann.  Here is his description of
+the problem (second paragraph is a paraphrase):
+
+<blockquote>
+The game starts with 45 cards.  (They need not be playing cards.
+Unmarked index cards work just as well.)  Randomly divide them into
+some number of piles of random size.  For example, you might start
+with piles of size 20, 5, 1, 9, and 10.  In each round you take one
+card from each pile, forming a new pile with these cards.  For
+example, the starting configuration would be transformed into piles of
+size 19, 4, 8, 9, and 5.  The solitaire is over when the piles have
+size 1, 2, 3, 4, 5, 6, 7, 8, and 9, in some order.  (It can be shown
+that you always end up with such a configuration.)
+<p>
+In the normal mode of operation your program will produce a random
+starting configuration and print it.  It then keeps applying the
+solitaire step and printing the results, and stops when the final
+configuration is reached.
+</blockquote>
+<p>
+We recommend you finish playing Horstmann's example game, started
+above, to see how it comes out (you can do it with just pencil and
+paper).  (Save your work because it's part of the associated lab assignment.)
+<p>
+
+To make it easier to test your code, your program will be able to
+be run in a few different modes, each of these controlled by a
+command-line argument.  The user may supply one or both of the
+arguments, or neither.
+
+  <dl>
+    <dt><strong><kbd>-u</kbd></strong>
+    <dd> Prompts for the initial configuration from the user, instead
+    of generating a random configuration.
+<p>
+  <dt><strong><kbd>-s</kbd></strong>
+    <dd> Stops between every round of the game.  The game only
+    continues when the user hits enter (a.k.a., return).
+ </dl>
+
+Command-line argument processing is discussed in section 11.3 of the
+  Horstmann text.  But to make things a little easier, we wrote the
+  code for processing the command-line arguments for you.  It appears in
+  starter code you get in the <kbd>main</kbd> method in <a
+  href="BulgarianSolitaireSimulator.java"><kbd>BulgarianSolitaireSimulator.java</kbd></a>.
+
+Here are a few examples of ways to run the program in the Unix shell:
+<pre>
+java -ea BulgarianSolitaireSimulator -u
+java -ea BulgarianSolitaireSimulator -u -s
+java -ea BulgarianSolitaireSimulator
+</pre>
+
+[Note: recall you are using the <kbd>-ea</kbd> argument for assertion-checking.
+  The arguments after the program name are the ones that get sent to
+  your program.]
+<p>
+There are more details about exactly what your output should look like
+in each of these operation modes in the section on the <a href="#prog"><kbd>BulgarianSolitaireSimulator</kbd> program</a>.
+<p>
+  
+Some of the requirements for the program relate to efficiency,
+testing, and style/design, as well as functionality.  They are described
+in detail in the following sections of the document, and then summarized <a
+href="#summary">near the end</a> of the document.
+
+<a name="interface"><h3>SolitaireBoard: interface</h3>
+
+What follows is the specification for the SolitaireBoard class.  You
+  must implement the following methods so they work as described: 
+<dl>
+<dt>
+<strong> <kbd>SolitaireBoard()</kbd></strong>
+<dd>
+Creates a solitaire board with a random initial configuration.
+<p>
+
+  <dt>
+<strong> <kbd>SolitaireBoard(ArrayList&lt;Integer&gt; piles)</kbd></strong>
+<dd>
+Creates a solitaire board with the given configuration.  
+Example values: [20, 5, 1, 9, 10].  <br>
+ Precondition: <kbd>piles</kbd> contains a sequence of positive numbers that sum to
+<kbd>SolitaireBoard.CARD_TOTAL</kbd>
+<p>
+
+<dt>
+<strong><kbd>void playRound()</kbd></strong>
+<dd>
+      Plays one round of Bulgarian solitaire.  Updates the configuration according to the rules
+      of Bulgarian solitaire: Takes one card from each pile, and puts them all together in a new pile.
+      The old piles that are left will be in the same relative order as before, 
+      and the new pile will be at the end.
+<p>
+
+<dt>
+<strong><kbd> boolean isDone()</kbd></strong>
+<dd>
+Returns true iff the current board is at the end of the game.  That is, there are <kbd>NUM_FINAL_PILES</kbd>
+piles that are of sizes 1, 2, 3, ..., <kbd>NUM_FINAL_PILES</kbd> in any order.
+<p>
+
+<dt>
+<strong><kbd>String configString()</kbd></strong>
+
+<dd> Returns current board configuration as a string with the format of
+      a space-separated list of numbers with <em>no leading or trailing spaces</em>.
+      The numbers represent the number of cards in each non-empty
+      pile.  Example return string: "20 5 1 9 10"
+  </dd>
+<p>
+
+</dl>
+<p>
+
+In addition, we have defined two public named constants for you:
+<dl>
+ <dt>
+<kbd><strong>static final int CARD_TOTAL</kbd></strong>
+<dt>
+  <kbd><strong>static final int NUM_FINAL_PILES</kbd></strong>
+<dd>
+We have defined two public named constants for you,
+  <kbd>CARD_TOTAL</kbd> (45) and <kbd>NUM_FINAL_PILES</kbd> (9).
+  Please write all of your code in terms of these constants, so that
+  your program will still work if their values are changed.  You
+  should also test your code with different values for
+   <kbd>NUM_FINAL_PILES</kbd>.  For games that will terminate, the sum of the numbers
+  from 1 to <kbd>NUM_FINAL_PILES</kbd> must equal <kbd>CARD_TOTAL</kbd>, so we have set
+  <kbd>CARD_TOTAL</kbd> to be a value computed from
+  <kbd>NUM_FINAL_PILES</kbd>.  So, for example, if you
+  change  <kbd>NUM_FINAL_PILES</kbd> to 4, <kbd>CARD_TOTAL</kbd> will automatically have the value 10.  See
+  comments in <a href="SolitaireBoard.java"><kbd>SolitaireBoard.java</kbd></a> for more details.
+
+</dl>
+
+Note: No <kbd>SolitaireBoard</kbd> methods do any I/O.
+<p>
+
+You may have noticed that there is another method,
+<kbd>isValidSolitaireBoard</kbd>, that's <kbd>private</kbd>, i.e., not part of
+the public interface.  We will describe that <a
+ href="#invar">later</a> after we discuss the representation.
+<p> 
+
+You may not change the public interface for this class, with the following
+exception: you may add a public <kbd>SolitaireBoard</kbd> <kbd>toString</kbd>
+method that you may want to use for debugging purposes.  It would
+be very short and mostly consist of call to the <kbd>toString</kbd> method(s) of its
+constituent part(s).  That way you can see if you are building your
+<kbd>SolitaireBord</kbd> object correctly, even before you implement
+<kbd>configString</kbd>.  Section 9.5.1 of the textbook has more about
+writing a <kbd>toString</kbd> method.  Hint: to get a String
+representation of an array, use <kbd>Arrays.toString</kbd>
+<p>
+
+<a name="impl"><h3>SolitaireBoard: representation/implementation</h3>
+</a>
+For the purposes of this assignment you are required to use an array
+to represent the piles of cards in your solitaire board (each array
+element is one pile).  <strong>You may have additional fields, but you may not
+use an <kbd>ArrayList</kbd></strong>.  This is going to be a partially-filled
+array.  However, different from other situations where the number of
+elements in an array can change size, in this application there is an
+upper bound on the number of elements, so if you allocate your array
+in the constructor using that upper bound, you'll never have to resize
+it later.  You'll figure out what that upper bound is once you think
+about the problem a little.
+<p>
+The reasons for this requirement are (1) to give you more practice with
+using arrays, (2) because the array capacity won't have to change (as
+described in the previous paragraph), and (3) if you want to write the most
+efficient solution (see <a href="#extra">extra credit section</a>
+below) using the ArrayList doesn't really make it any easier.
+<p>
+
+<a name="invar"><h3>Representation invariants</h3>
+
+Many of the development techniques we discuss in this class, for
+example, incremental development, the use of good variable names, and
+unit-testing, are to help enable you to write correct code (and make it
+easier to enhance that code later).  Another way to ensure correct
+code within a class is to make explicit any restrictions on what
+values are allowed to be in a private instance variable, and any
+restrictions on relationships between values in different instances
+variables in our object.  Or put another way, making sure you know what
+must be true about our object representation when it is in a valid
+state.  These are called <em>representation invariants</em>.
+<p>
+
+Representation invariants are 
+statements that are true about the object as viewed by the implementor.  Since for many
+classes, once a constructor has been called the other methods can be
+called in any order, you need to ensure that none of the constructors
+or mutators can leave the object in an invalid state.  It will be
+easier to do that if you know what those assumptions are.
+<p>
+
+There are two assignment requirements for your SolitaireBoard class related to
+this issue listed here, and described in more detail right after that.
+
+<ol>
+
+<li> in a comment just above or below your private instance variable
+definitions for SolitaireBoard, list the representation invariants for
+the object.
+
+<li> write the private <kbd>boolean</kbd> method <kbd>isValidSolitaireBoard()</kbd> and
+call it from other places in your program as described below.
+
+</ol>
+
+<strong>1. The representation invariant comment for <kbd>SolitaireBoard</kbd></strong>
+
+<br>
+
+Write a list of all the conditions that the internals of a
+SolitaireBoard object must satisfy.  That is, conditions that are
+always true about the data in a valid SolitaireBoard object.  For
+example, one or more invariants would describe where the data is in a
+partially filled array (we did a similar example in lecture on 2/6).
+Another one (or more) would be related to the restriction that there
+are always <kbd>CARD_TOTAL</kbd> cards on the board.
+<p>
+
+<a name="valid"></a> <strong>2. <kbd>isValidSolitaireBoard()</kbd>
+method</strong>
+
+<br> 
+
+This private method will test the representation invariant for the
+internals of a solitaire board.  It will return true iff it is valid, i.e., the
+invariants are satisfied.
+
+<p>
+Call this function at the end of every public SolitaireBoard method,
+including the constructors, to make
+sure the method leaves the board
+in the correct state.  This is one kind of sanity check: one part of a
+program double-checking that another part is doing the right thing (similar
+to printing expected results and actual results).
+<p>
+
+Rather than putting this test in an if statement, we're going to put
+it in an <kbd>assert</kbd> statement.  For example:
+
+<pre>
+assert isValidSolitaireBoard();
+</pre>
+
+  Assert statements are described
+in Special topic 11.6 of the text.
+<p>
+
+Please make sure you are running your program with assertions enabled
+for every run of this program, since it's in a development stage.  See
+earlier <a href="#run">section</a> for how to do this.
+
+You won't really know if they are getting checked unless you
+force one to fail.
+<p>
+
+The point of these assert statements is to notify you in no uncertain
+terms of possible bugs in your code.  The program
+crashing will force you to fix those bugs.  For example, if a board
+doesn't have <kbd>CARD_TOTAL</kbd> (45) cards on it, then the simulation may never
+terminate, or if the array has "hole" in the middle, then other
+methods, such as <kbd>configString</kbd> may not work as advertised.
+<p>
+
+<a name="prog"><h3><kbd>BulgarianSolitaireSimulator</kbd> program</h3>
+</a>
+
+Please take a look at this example for what your output must look like.
+This shows (part of) a run of
+the program with the <strong><kbd>-u</kbd></strong> option turned on
+(<kbd>-u</kbd> stands for <strong>u</strong>ser input mode.)
+It also
+illustrates the error-checking.  User input is shown in bold and
+the ". . ." below represents some steps not shown here.
+
+<pre>
+Number of total cards is 45
+You will be entering the initial configuration of the cards (i.e., how many in each pile).
+Please enter a space-separated list of positive integers followed by newline:
+<strong>40 1 1 1 1</strong>
+ERROR: Each pile must have at least one card and the total number of cards must be 45
+Please enter a space-separated list of positive integers followed by newline:
+<strong>44 b 1 x</strong>
+ERROR: Each pile must have at least one card and the total number of cards must be 45
+Please enter a space-separated list of positive integers followed by newline:
+<strong>100 -55</strong>
+ERROR: Each pile must have at least one card and the total number of cards must be 45
+Please enter a space-separated list of positive integers followed by newline:
+<strong>0 45</strong>
+ERROR: Each pile must have at least one card and the total number of cards must be 45
+Please enter a space-separated list of positive integers followed by newline:
+<strong>40 1 1 1 1 1</strong>
+Initial configuration: 40 1 1 1 1 1
+[1] Current configuration: 39 6
+[2] Current configuration: 38 5 2
+[3] Current configuration: 37 4 1 3
+. . .
+[30] Current configuration: 10 2 3 4 5 6 7 8
+[31] Current configuration: 9 1 2 3 4 5 6 7 8
+Done!
+</pre>
+
+Here is an example of what your output should look like with the
+<strong><kbd>-s</kbd></strong> option turned on
+(<kbd>-s</kbd> stands for
+<strong>s</strong>ingle step mode).
+The -u option is not set in this
+example, so it uses a random initial configuration.
+Again, only part
+of the run is shown here.  After each
+"<kbd>&lt;Type return...&gt;</kbd>" the program blocks until the user hits the return
+key.
+
+<pre>
+Initial configuration: 9 4 6 26
+[1] Current configuration: 8 3 5 25 4
+&lt;Type return to continue&gt;
+[2] Current configuration: 7 2 4 24 3 5
+&lt;Type return to continue&gt;
+[3] Current configuration: 6 1 3 23 2 4 6
+&lt;Type return to continue&gt;
+. . .
+[26] Current configuration: 2 3 4 5 6 7 8 10
+&lt;Type return to continue&gt;
+[27] Current configuration: 1 2 3 4 5 6 7 9 8
+&lt;Type return to continue&gt;
+Done!
+</pre>
+
+If <em>neither</em> argument is set, then the program will take no user input,
+and just show the initial configuration followed by the numbered result of each round until it finishes
+(i.e., output like the second example above, but without the lines
+that say "&lt;Type return...&gt;").
+<p>
+
+A correct program will always terminate.  For some values of <kbd>SolitaireBoard.CARD_TOTAL</kbd> 
+a game won't terminate; so do not change the initialization expression that sets this value
+based on the current value of
+<kbd>SolitaireBoard.NUM_FINAL_PILES</kbd> (the code to do that is already present
+in the starter version); this way it should still terminate even if you
+change <kbd>NUM_FINAL_PILES</kbd> to some other positive value.
+<p>
+
+<strong>
+Your output for a particular input must match what's shown above
+character-by-character</strong> (e.g., the messages displayed and the
+error handling should be the same), so we can automate our tests when
+we grade your program.  This means the new piles must appear in the
+particular order shown, not only in how they are printed, but the order
+of the numbers in the <kbd>String</kbd> returned by the
+<kbd>SolitaireBoard</kbd>'s <kbd>configString</kbd> method.
+
+
+<p>
+
+<a name="error"><h3>Error checking required</h3>
+
+You are required to check that the list of numbers entered are
+actually all numbers (integers) and represents a valid configuration.
+Section 11.2.7 of the text discusses how to use a Scanner to check
+whether a string is a valid integer.  The previous section showed
+examples of invalid input, and what the program's response should be.
+
+<a name="lineinput"><h3>Converting a String into an array of numbers</h3>
+
+In user mode, you will not be able to read in the numbers directly
+into an ArrayList of integers using repeated calls to
+<kbd>nextInt</kbd>, because we're using newline as a sentinel (i.e., a
+signal that that's the end of the input data), and <kbd>nextInt</kbd>
+skips over (as in, doesn't stop for) newlines.  So you'll want to
+first read the input all at once using the <kbd>Scanner</kbd>
+<kbd>nextLine</kbd> method, and then convert them to an ArrayList of
+integers.
+<p>
+
+How do we do such a conversion?  Section 11.2.5 of the textbook
+(called Scanning a String) shows one way of solving the problem of
+processing an indeterminate number of values all on one line.  It
+takes advantage of the fact that the <kbd>Scanner</kbd> class can also
+be used to read from a <kbd>String</kbd> instead of the keyboard.
+Once we have our String of ints from the call to
+<kbd>nextLine()</kbd>, you create a <em>second</em> <kbd>Scanner</kbd>
+object initialized with this string to then break up the line into the
+parts you want, using the Scanner methods you are already familiar
+with.
+<p>
+
+<a name="struct"><h3>Structure of <kbd>BulgarianSolitaireSimulator</kbd></h3>
+
+The code for <kbd>BulgarianSolitaireSimulator</kbd> is too long
+to be readable if you put it all
+into the <kbd>main</kbd> method.  One could design and add another
+class, to deal with the simulation, but instead here you'll use a procedural
+design to organize the code; we'll review procedural design here.
+<p>
+
+A good design principle (for procedural as well as object-oriented
+programming) is to keep each of your methods small, for easier
+program readability.  In object-oriented programming, the class design
+sometimes naturally results in small methods, but sometimes you still
+need auxiliary private methods.
+The same principles apply for
+a procedural design.  Since we haven't given you a predefined method
+decomposition for the <kbd>BulgarianSolitaireSimulator</kbd>, you will have to create
+this decomposition yourself.
+<p>
+
+A procedural design in Java is just implemented as <kbd>static</kbd>
+methods in Java that pass data around via explicit parameters.  Static
+methods are discussed in Section 8.4 of the text, and this use of them
+was also discussed in a <a
+href="../../labs/lab4/lab4.html#static">sidebar in Lab 4</a>.  You
+have seen a few examples of this in other test programs we have
+written, for example <a
+href="../../labs/lab4/NumsTester.java"><kbd>NumsTester.java</kbd></a>
+of lab 4, and <kbd>PartialNamesTester.java</kbd> we developed in
+lecture.  You have also seen some utility classes in Java that have
+static methods: <kbd>Math</kbd> and <kbd>Arrays</kbd>.
+
+<p>
+If you have learned about procedural design in other programming
+classes, you know that global variables are a no-no.  This is another
+example of the principle of locality.  Thus, in designing such a "main
+program" class, we don't create any class-level variables, because
+they become effectively global variables (see also <a
+href="../style.html" target="_blank">Style Guideline</a> #9).  The
+"main class" does not represent any overall object.  Instead you will
+create variables <em>local</em> to <kbd>main</kbd> that will get
+passed to (or returned from) its helper methods, as necessary.  <p>
+Note: the next section discusses a limit on method length as one of
+our style guidelines for this course.
+<p>
+
+Another design issue that comes up often in both object-oriented and
+procedural designs is code reuse.  You've seen a couple examples of
+one kind of code reuse in lecture where we've created a parameterized
+method that generalizes some action to avoid repeating code, calling
+the method every time we need to do that action instead.  For example,
+<kbd>doOneLookup</kbd> in <kbd>PartialNamesTester</kbd> from the
+lecture on 2/1.  In
+particular, for this assignment, if there are four possible modes in
+which the program can be run (i.e., two flags that can be turned on
+and off independently), a good solution would <em>not</em> repeat the
+same code four times!  Imagine, if we added two more options, we'd
+have to have it repeated sixteen times!
+<p>
+
+As we've discussed in lecture: one clue is if you find yourself
+writing the same or similar code sequence multiple times, it may be an
+indication that there's a better (and shorter) way to do it.
+<p>
+
+<a name="scanner"><h3>A note about the <kbd>System.in</kbd> <kbd>Scanner</kbd></h3>
+
+This (and all Java programs that read from the console) should only
+have one <kbd>Scanner</kbd> object to read from <kbd>System.in</kbd>.
+If you make multiple such Scanner objects your program will not work
+with our test scripts.  You will also have problems if you try to open and
+close multiple Scanners from System.in in your code.  Once you create that one
+Scanner, you can pass it as a parameter to other methods to be able to
+use it in different places.  Here is a little program with an example of
+this:
+
+<pre>
+public class MyClass {
+   public static void main(String[] args) {
+      Scanner in = new Scanner(System.in);  <strong>// create the Scanner</strong>
+      . . .
+      int dataVal = in.nextInt();  <strong>// using "in" directly in main</strong>
+      . . .
+      // readAndValidateString will also read some more input
+      String moreData = readAndValidateString(in); <strong>// pass "in" as a parameter here</strong>
+      . . .
+   }
+
+   // prompts for a String from "in", reads it, and validates it.
+   private static String readAndValidateString (Scanner in) { 
+      <strong>// don't create another Scanner for Sytem.in here; use the parameter instead</strong>
+      . . .
+      String theString = in.next();
+      . . .
+      return theString;
+   }
+   . . .
+}
+</pre>
+
+As you may know by now, you can create <kbd>Scanner</kbd> objects that
+have different data sources.  We are not saying you can only have one
+<kbd>Scanner</kbd>, but rather that you should only have one that was
+created using <kbd>new Scanner(System.in)</kbd>.
+
+<a name="summary"><h3>Summary of requirements</h3>
+
+As on the first assignment, there are several requirements for this
+assignment related to design, testing, and development process strewn
+throughout this document.  We'll summarize those and the functional
+requirements here:
+
+<ul>
+
+<li> implement SolitaireBoard class according its public interface (see <a
+href="#interface">SolitaireBoard: interface</a>)
+
+<li> use the representation for SolitaireBoard described in the
+section <a href="#impl">about that</a>.
+
+<li> write <a href="#invar">representation invariant</a> comments for
+SolitaireBoard class.
+
+<li> implement and use private SolitaireBoard method <kbd>isValidSolitaireBoard</kbd> as described 
+<a href="#valid">here</a>.
+
+<li> implement BulgarianSolitaireSimulator with the user interface described in the section
+about the <a href="#prog">BulgarianSolitaireSimulator program</a>.
+
+  <li> only use the expression <kbd>new Scanner(System.in)</kbd>
+  at most <em>once</em> in your program (see <a href="#scanner" >
+  previous section</a>)
+
+<li> do the error checking described in the <a href="#error" >Error
+  Checking section</a>.
+
+<li> your code will also be evaluated on style, documentation, and design.
+We will deduct points for programs that do not follow the published <a
+ href="../style.html" >style guidelines</a> for this course (they are
+also linked from the Assignments page).  (Note: For pa1 we only
+deducted points for problems related to <em>some</em> of the style
+guidelines.)  One guideline we want you to be especially aware of is the limit of 30
+lines of code at most allowable in a method.  This is exclusive of
+whitespace, comment lines, and lines that just have a curly bracket by
+itself (i.e., you should not sacrifice code-readability to make your
+code fit into this limit).  Hopefully, it's obvious that putting
+  multiple statements or declarations on a single line decreases code
+  readability and is not desirable; that would also result a loss in style
+  points.
+
+<p>
+  For these "style" points we will also take into account the general quality of
+  your design (e.g., see hints in the previous section).  
+</ul>
+<p>
+
+
+
+<a name="extra"><h3>Extra credit</h3>
+
+We won't be discussing big-O until nearer the due date, so we're making
+this one part extra credit:  You will receive a small amount of extra
+credit if your <kbd>playRound</kbd> and <kbd>isDone</kbd> methods execute in time linear in
+the number of piles (i.e., O(<em>n</em>)) and if your <kbd>playRound</kbd> uses
+a constant amount of extra space (e.g., it does not allocate a new array).
+However, your <kbd>isDone</kbd>
+method may use more space to meet the O(<em>n</em>) time requirement.
+<p>
+If you are a student who is struggling in the class or starting the
+program on the late side, I recommend not attempting the extra credit,
+or only doing so if you have extra time after you have a complete
+working program (and save a backup of that working program).
+<p>
+
+<a name="submit"><h3>README file / Submitting your program</h3>
+
+You will be submitting <kbd>SolitaireBoard.java</kbd>, <kbd>BulgarianSolitaireSimulator.java</kbd>, and
+<kbd>README</kbd>.  Make sure your name and loginid appear at the
+start of each file.
+<p>
+
+Here's a review of what goes in the README:  This is the place to
+document known bugs in your program. That means you should describe
+thoroughly any test cases that fail for the the program you are
+submitting.  (You do not need to include a history of the bugs you
+already fixed.)  You also use the README to give the grader any other
+special information, such as if there is some special way to compile
+or run your program.  You will also be signing the <a href="#certification" >certification</a> 
+shown near the top of this document.
+<p>
+
+Reminder: if you developed your code locally on your laptop, before
+submitting you will need to upload your code to aludra, and
+compile and re-test it there before submitting it from aludra.
+<p>
+
+As you did for pa1, to submit your code: from the aludra directory that
+contains your completed assignment and the pa2 <a
+href="Makefile">Makefile</a>, do the Unix command:
+
+<pre>
+gmake submit
+</pre>
+
+at the Unix prompt.
+<p>
+<hr>
+</body>
+</html>
